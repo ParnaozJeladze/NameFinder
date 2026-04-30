@@ -1,14 +1,16 @@
 """
 Georgian Surname Lookup Tool
-Single-file Flask app with inline HTML/CSS/JS for surname transliteration and Forebears.io lookup.
+Flask backend with separate index.html frontend for surname transliteration and Forebears.io lookup.
 """
 
-import re
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.')
+CORS(app)  # Enable CORS for the API
 
 # Georgian to Latin transliteration map (official National romanization standard)
 GEORGIAN_TO_LATIN = {
@@ -568,7 +570,7 @@ HTML_TEMPLATE = '''
 @app.route('/')
 def index():
     """Serve the main page."""
-    return render_template_string(HTML_TEMPLATE)
+    return send_from_directory('.', 'index.html')
 
 
 @app.route('/api/search', methods=['POST'])
