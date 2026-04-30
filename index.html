@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Georgian Surname Lookup</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #fff;
+            font-size: 2.2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
+        }
+
+        input[type="text"]::placeholder {
+            color: #666;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a9eff 0%, #2d7dd2 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.visible {
+            display: block;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .results-header h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .surname-display {
+            font-size: 2rem;
+            color: #4a9eff;
+            font-weight: 700;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .stat-subvalue {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .country-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .country-table th {
+            text-align: left;
+            padding: 12px 16px;
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .country-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .country-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .country-name {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .country-count {
+            color: #4a9eff;
+            font-weight: 600;
+        }
+
+        .country-freq {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.15);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #ff6b6b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4a9eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #888;
+        }
+
+        .note {
+            background: rgba(74, 158, 255, 0.1);
+            border: 1px solid rgba(74, 158, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .note a {
+            color: #4a9eff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Georgian Surname Lookup</h1>
+        <p class="subtitle">Enter a surname in Georgian script to find its global distribution</p>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="georgianInput">Georgian Script</label>
+                <input type="text" id="georgianInput" placeholder="e.g. ბერიძე" autocomplete="off">
+            </div>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="latinInput">Latin Transliteration</label>
+                <input type="text" id="latinInput" placeholder="e.g. Beridze" autocomplete="off">
+            </div>
+
+            <button class="btn btn-primary" id="searchBtn" style="margin-top: 20px;">
+                Search
+            </button>
+
+            <div class="note">
+                <strong>Note:</strong> This static version uses a CORS proxy to fetch data from Forebears.io.
+                If search doesn't work, try the Python version or disable CORS in your browser for testing.
+            </div>
+        </div>
+
+        <div class="card results" id="resultsCard">
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const georgianInput = document.getElementById('georgianInput');
+        const latinInput = document.getElementById('latinInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsCard = document.getElementById('resultsCard');
+        const resultsContent = document.getElementById('resultsContent');
+
+        // Georgian to Latin transliteration map
+        const translitMap = {
+            'ა': 'a', 'ბ': 'b', 'გ': 'g', 'დ': 'd', 'ე': 'e',
+            'ვ': 'v', 'ზ': 'z', 'თ': 't', 'ი': 'i', 'კ': 'k',
+            'ლ': 'l', 'მ': 'm', 'ნ': 'n', 'ო': 'o', 'პ': 'p',
+            'ჟ': 'zh', 'რ': 'r', 'ს': 's', 'ტ': 't', 'უ': 'u',
+            'ფ': 'p', 'ქ': 'k', 'ღ': 'gh', 'ყ': 'q', 'შ': 'sh',
+            'ჩ': 'ch', 'ც': 'ts', 'ძ': 'dz', 'წ': 'ts', 'ჭ': 'ch',
+            'ხ': 'kh', 'ჯ': 'j', 'ჰ': 'h'
+        };
+
+        function transliterate(text) {
+            let result = '';
+            for (let char of text) {
+                result += translitMap[char] || char;
+            }
+            return result;
+        }
+
+        // Auto-transliterate on input
+        georgianInput.addEventListener('input', function() {
+            const georgianText = this.value;
+            const latinText = transliterate(georgianText);
+            latinInput.value = latinText;
+        });
+
+        // Fetch through CORS proxy
+        async function fetchWithProxy(url) {
+            // Try multiple CORS proxies
+            const proxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://api.codetabs.com/v1/proxy?quest='
+            ];
+
+            for (const proxy of proxies) {
+                try {
+                    const response = await fetch(proxy + encodeURIComponent(url), {
+                        headers: {
+                            'Accept': 'text/html'
+                        }
+                    });
+                    if (response.ok) {
+                        return await response.text();
+                    }
+                } catch (e) {
+                    continue;
+                }
+            }
+            throw new Error('All CORS proxies failed');
+        }
+
+        // Search function
+        async function searchSurname() {
+            const surname = latinInput.value.trim();
+            if (!surname) {
+                alert('Please enter a surname');
+                return;
+            }
+
+            // Show loading state
+            searchBtn.disabled = true;
+            resultsCard.classList.add('visible');
+            resultsContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Searching for "${surname}"...</p>
+                </div>
+            `;
+
+            const url = `https://forebears.io/surnames/${surname}`;
+
+            try {
+                const html = await fetchWithProxy(url);
+                const data = parseForebearsData(html, surname);
+
+                if (data.error) {
+                    resultsContent.innerHTML = `
+                        <div class="error-message">
+                            <strong>Not Found</strong><br>
+                            ${data.error}
+                        </div>
+                    `;
+                } else {
+                    renderResults(data);
+                }
+            } catch (error) {
+                resultsContent.innerHTML = `
+                    <div class="error-message">
+                        <strong>Error</strong><br>
+                        Failed to fetch data. This may be due to CORS restrictions.<br><br>
+                        Try using the Python version or a CORS-unblocking browser extension.
+                    </div>
+                `;
+            }
+
+            searchBtn.disabled = false;
+        }
+
+        function parseForebearsData(html, surname) {
+            // Create a DOM parser
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Extract global count
+            let globalCount = null;
+            const countElems = doc.querySelectorAll('.count, [data-bind*="count"]');
+            for (const elem of countElems) {
+                const text = elem.textContent.trim();
+                if (text && /[\d,]+/.test(text)) {
+                    globalCount = text.replace(/,/g, '');
+                    break;
+                }
+            }
+
+            // Extract frequency
+            let globalFrequency = null;
+            const freqElems = doc.querySelectorAll('.frequency, [data-bind*="frequency"]');
+            for (const elem of freqElems) {
+                const text = elem.textContent.trim();
+                if (text && /1\s*in/.test(text)) {
+                    globalFrequency = text;
+                    break;
+                }
+            }
+
+            // Extract country data from table
+            const countries = [];
+            const table = doc.querySelector('table');
+            if (table) {
+                const rows = table.querySelectorAll('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cols = rows[i].querySelectorAll('td');
+                    if (cols.length >= 3) {
+                        const countryLink = cols[0].querySelector('a');
+                        const countryName = countryLink ? countryLink.textContent.trim() : cols[0].textContent.trim();
+                        const count = cols[1] ? cols[1].textContent.trim().replace(/,/g, '') : '0';
+                        const frequency = cols[2] ? cols[2].textContent.trim() : 'N/A';
+
+                        if (countryName && count) {
+                            countries.push({
+                                name: countryName,
+                                count: count,
+                                frequency: frequency
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (!globalCount && countries.length === 0) {
+                return { error: `Surname "${surname}" not found on Forebears.io` };
+            }
+
+            return {
+                surname: surname,
+                global_count: globalCount,
+                global_frequency: globalFrequency,
+                countries: countries
+            };
+        }
+
+        function renderResults(data) {
+            // Calculate total from countries
+            let totalFromCountries = 0;
+            if (data.countries && data.countries.length > 0) {
+                for (const c of data.countries) {
+                    const countNum = parseInt(c.count.replace(/,/g, '')) || 0;
+                    totalFromCountries += countNum;
+                }
+            }
+            const globalCountNum = data.global_count ?
+                parseInt(data.global_count.replace(/,/g, '')) || 0 :
+                totalFromCountries;
+            const globalCount = globalCountNum > 0 ?
+                globalCountNum.toLocaleString() : 'N/A';
+
+            // Calculate frequency as "1 in X people"
+            const worldPopulation = 8000000000;
+            let globalFreqText = 'N/A';
+            if (globalCountNum > 0) {
+                const oneIn = Math.round(worldPopulation / globalCountNum);
+                globalFreqText = `1 in ${oneIn.toLocaleString()}`;
+            }
+
+            let countriesHtml = '';
+            if (data.countries && data.countries.length > 0) {
+                countriesHtml = `
+                    <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;">By Country</h3>
+                    <table class="country-table">
+                        <thead>
+                            <tr>
+                                <th>Country</th>
+                                <th>Count</th>
+                                <th>Frequency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.countries.map(c => `
+                                <tr>
+                                    <td class="country-name">${c.name}</td>
+                                    <td class="country-count">${Number(c.count).toLocaleString()}</td>
+                                    <td class="country-freq">${c.frequency}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            resultsContent.innerHTML = `
+                <div class="results-header">
+                    <h2>Surname Distribution</h2>
+                    <div class="surname-display">${data.surname}</div>
+                    <div style="color: #4a9eff; font-size: 1.3rem; font-weight: 600; margin-top: 10px;">
+                        Total: ${globalCount} people worldwide
+                    </div>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Global Count</div>
+                        <div class="stat-value">${globalCount}</div>
+                        <div class="stat-subvalue">people worldwide</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Global Frequency</div>
+                        <div class="stat-value">${globalFreqText}</div>
+                        <div class="stat-subvalue">people worldwide</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Countries</div>
+                        <div class="stat-value">${data.countries ? data.countries.length : 0}</div>
+                        <div class="stat-subvalue">where found</div>
+                    </div>
+                </div>
+
+                ${countriesHtml}
+            `;
+        }
+
+        searchBtn.addEventListener('click', searchSurname);
+
+        // Allow Enter key to trigger search
+        latinInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchSurname();
+            }
+        });
+    </script>
+</body>
+</html>
